@@ -1,21 +1,21 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
-
 import express from 'express';
-import * as path from 'path';
+import * as bodyParser from 'body-parser';
+import cors from 'cors';  // A importação correta de cors
+import floorplanRoutes from './routes/floorplan';
 
 const app = express();
-
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
-
-app.get('/api', (req, res) => {
-  res.send({ message: 'Welcome to backend!' });
-});
-
 const port = process.env.PORT || 3333;
-const server = app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}/api`);
+
+app.use(bodyParser.json());
+
+// Habilitar CORS
+app.use(cors({
+  origin: 'http://localhost:4200',  // Permite requisições do frontend rodando no localhost:4200
+}));
+
+// Rota para geração de plantas baixas
+app.use('/api/floorplan', floorplanRoutes);
+
+app.listen(port, () => {
+  console.log(`Backend rodando na porta ${port}`);
 });
-server.on('error', console.error);
