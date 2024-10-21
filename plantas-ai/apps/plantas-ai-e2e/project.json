@@ -1,0 +1,9 @@
+{
+  "name": "plantas-ai-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/plantas-ai-e2e/src",
+  "tags": [],
+  "implicitDependencies": ["plantas-ai"],
+  "// targets": "to see all targets run: nx show project plantas-ai-e2e --web",
+  "targets": {}
+}
