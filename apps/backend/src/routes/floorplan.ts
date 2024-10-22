@@ -35,34 +35,58 @@ function generateFloorPlan(
 // Função simulada para a IA gerar um layout
 function generateLayoutWithAI(dimensions: { width: number; length: number }, rooms: { [key: string]: number }) {
   const layout = [];
+  const totalArea = dimensions.width * dimensions.length;
 
-  // Gerar o layout de acordo com a quantidade de cada tipo de cômodo
-  Object.keys(rooms).forEach((roomType) => {
-    const roomCount = rooms[roomType];
-    for (let i = 0; i < roomCount; i++) {
-      let area;
-      switch (roomType) {
-        case 'bedrooms':
-          area = 12; // Área média de um quarto
-          break;
-        case 'bathrooms':
-          area = 4; // Área média de um banheiro
-          break;
-        case 'kitchen':
-          area = 10; // Área média de uma cozinha
-          break;
-        case 'livingRoom':
-          area = 15; // Área média de uma sala de estar
-          break;
-        default:
-          area = 8; // Área padrão para outros cômodos
-      }
-      layout.push({ type: roomType, area });
+  // Definir áreas específicas para diferentes tipos de cômodos
+  const zoneAllocation = {
+    private: 0.4 * totalArea, // Zona privada (quartos e banheiros) ocupa 40% da área
+    social: 0.4 * totalArea,  // Zona social (sala de estar, jantar, cozinha) ocupa 40%
+    service: 0.2 * totalArea, // Zona de serviço ocupa 20%
+  };
+
+  // Agrupamento por zona
+  const zones = {
+    private: [],
+    social: [],
+    service: [],
+  };
+
+  // Distribuir cômodos nas zonas
+  if (rooms.bedrooms) {
+    const areaPerRoom = zoneAllocation.private / rooms.bedrooms;
+    for (let i = 0; i < rooms.bedrooms; i++) {
+      zones.private.push({ type: 'Quarto', area: areaPerRoom });
     }
-  });
+  }
+
+  if (rooms.bathrooms) {
+    const areaPerRoom = zoneAllocation.private / rooms.bathrooms;
+    for (let i = 0; i < rooms.bathrooms; i++) {
+      zones.private.push({ type: 'Banheiro', area: areaPerRoom });
+    }
+  }
+
+  if (rooms.livingRoom) {
+    const areaPerRoom = zoneAllocation.social / rooms.livingRoom;
+    for (let i = 0; i < rooms.livingRoom; i++) {
+      zones.social.push({ type: 'Sala de Estar', area: areaPerRoom });
+    }
+  }
+
+  if (rooms.kitchen) {
+    const areaPerRoom = zoneAllocation.social / rooms.kitchen;
+    for (let i = 0; i < rooms.kitchen; i++) {
+      zones.social.push({ type: 'Cozinha', area: areaPerRoom });
+    }
+  }
+
+  // Adicionar as zonas ao layout final
+  layout.push(...zones.private, ...zones.social, ...zones.service);
 
   return layout;
 }
+
+
 
 
 router.post('/generate-ai', (req, res) => {
