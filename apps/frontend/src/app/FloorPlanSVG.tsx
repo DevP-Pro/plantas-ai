@@ -25,7 +25,13 @@ interface FloorPlanSVGProps {
   recesses: Recess;
 }
 
-const FloorPlanSVG: React.FC<FloorPlanSVGProps> = ({ layout, dimensions, availableWidth, availableLength, recesses }) => {
+const FloorPlanSVG: React.FC<FloorPlanSVGProps> = ({
+  layout,
+  dimensions,
+  availableWidth,
+  availableLength,
+  recesses,
+}) => {
   const scale = 10;
 
   useEffect(() => {
@@ -34,8 +40,10 @@ const FloorPlanSVG: React.FC<FloorPlanSVGProps> = ({ layout, dimensions, availab
         listeners: {
           move(event) {
             const target = event.target;
-            const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-            const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+            const x =
+              (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+            const y =
+              (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
 
             target.style.transform = `translate(${x}px, ${y}px)`;
             target.setAttribute('data-x', x.toString());
@@ -48,8 +56,8 @@ const FloorPlanSVG: React.FC<FloorPlanSVGProps> = ({ layout, dimensions, availab
         listeners: {
           move(event) {
             const target = event.target;
-            let x = (parseFloat(target.getAttribute('data-x')) || 0);
-            let y = (parseFloat(target.getAttribute('data-y')) || 0);
+            let x = parseFloat(target.getAttribute('data-x')) || 0;
+            let y = parseFloat(target.getAttribute('data-y')) || 0;
 
             target.style.width = `${event.rect.width}px`;
             target.style.height = `${event.rect.height}px`;
@@ -71,13 +79,8 @@ const FloorPlanSVG: React.FC<FloorPlanSVGProps> = ({ layout, dimensions, availab
       });
   }, []);
 
-  // Verificação adicional para garantir que recesses não sejam indefinidos
-  const lateralRecess = recesses?.lateralRecess || 0;
-  const frontalRecess = recesses?.frontalRecess || 0;
-  const backRecess = recesses?.backRecess || 0;
-
-  let currentX = lateralRecess * scale;
-  let currentY = frontalRecess * scale;
+  let currentX = recesses.lateralRecess * scale;
+  let currentY = recesses.frontalRecess * scale;
 
   return (
     <svg
@@ -87,8 +90,8 @@ const FloorPlanSVG: React.FC<FloorPlanSVGProps> = ({ layout, dimensions, availab
     >
       {/* Desenhar a área útil disponível após os recuos */}
       <rect
-        x={lateralRecess * scale}
-        y={frontalRecess * scale}
+        x={recesses.lateralRecess * scale}
+        y={recesses.frontalRecess * scale}
         width={availableWidth * scale}
         height={availableLength * scale}
         fill="none"
@@ -96,33 +99,84 @@ const FloorPlanSVG: React.FC<FloorPlanSVGProps> = ({ layout, dimensions, availab
         strokeDasharray="5,5"
       />
 
-      {/* Renderizar os cômodos dentro da área útil */}
+      {/* Renderizar a área de luz */}
       {layout.map((room, index) => {
-        const roomWidth = Math.sqrt(room.area) * scale;
-        const roomHeight = Math.sqrt(room.area) * scale;
-
-        const rect = (
-          <rect
-            key={index}
-            className="draggable"
-            x={currentX}
-            y={currentY}
-            width={roomWidth}
-            height={roomHeight}
-            fill="lightblue"
-            stroke="black"
-            data-x="0"
-            data-y="0"
-          />
-        );
-
-        currentX += roomWidth;
-        if (currentX >= (lateralRecess + availableWidth) * scale) {
-          currentX = lateralRecess * scale;
-          currentY += roomHeight;
+        if (room.type === 'Área de Luz') {
+          return (
+            <rect
+              key={index}
+              className="draggable"
+              x={currentX}
+              y={currentY}
+              width={Math.sqrt(room.area) * scale}
+              height={Math.sqrt(room.area) * scale}
+              fill="yellow"
+              stroke="black"
+              data-x="0"
+              data-y="0"
+            />
+          );
         }
+        return null;
+      })}
 
-        return rect;
+      {/* Renderizar a área de lazer */}
+      {layout.map((room, index) => {
+        if (room.type === 'Área de Lazer') {
+          // Posicionar a área de lazer no fundo do terreno
+          const leisureX = recesses.lateralRecess * scale;
+          const leisureY =
+            (recesses.frontalRecess + availableLength - Math.sqrt(room.area)) *
+            scale;
+
+          return (
+            <rect
+              key={index}
+              className="draggable"
+              x={leisureX}
+              y={leisureY}
+              width={Math.sqrt(room.area) * scale}
+              height={Math.sqrt(room.area) * scale}
+              fill="green"
+              stroke="black"
+              data-x="0"
+              data-y="0"
+            />
+          );
+        }
+        return null;
+      })}
+
+      {/* Renderizar os outros cômodos */}
+      {layout.map((room, index) => {
+        if (room.type !== 'Área de Luz' && room.type !== 'Área de Lazer') {
+          const roomWidth = Math.sqrt(room.area) * scale;
+          const roomHeight = Math.sqrt(room.area) * scale;
+
+          const rect = (
+            <rect
+              key={index}
+              className="draggable"
+              x={currentX}
+              y={currentY}
+              width={roomWidth}
+              height={roomHeight}
+              fill="lightblue"
+              stroke="black"
+              data-x="0"
+              data-y="0"
+            />
+          );
+
+          currentX += roomWidth;
+          if (currentX >= (recesses.lateralRecess + availableWidth) * scale) {
+            currentX = recesses.lateralRecess * scale;
+            currentY += roomHeight;
+          }
+
+          return rect;
+        }
+        return null;
       })}
     </svg>
   );

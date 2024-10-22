@@ -45,44 +45,62 @@ function generateLayoutWithAI(dimensions: { width: number; length: number }, roo
   const availableWidth = dimensions.width - 2 * lateralRecess;
   const availableLength = dimensions.length - frontalRecess - backRecess;
 
-  // Exemplo simples de distribuição de cômodos (pode ser melhorado conforme necessário)
   const totalAvailableArea = availableWidth * availableLength;
+
+  // Distribuir o espaço entre zonas privadas, sociais e de serviço
   const zoneAllocation = {
-    private: 0.4 * totalAvailableArea,
-    social: 0.4 * totalAvailableArea,
-    service: 0.2 * totalAvailableArea,
+    private: 0.4 * totalAvailableArea,  // Zona privada (quartos e banheiros) ocupa 40% da área
+    social: 0.4 * totalAvailableArea,   // Zona social (sala de estar, jantar, cozinha) ocupa 40%
+    service: 0.2 * totalAvailableArea,  // Zona de serviço ocupa 20%
   };
 
-  // Distribuir cômodos nas zonas (exemplo simples)
+  const zones = {
+    private: [],
+    social: [],
+    service: [],
+  };
+
+  // Zona Privada (quartos e banheiros)
   if (rooms.bedrooms) {
     const areaPerRoom = zoneAllocation.private / rooms.bedrooms;
     for (let i = 0; i < rooms.bedrooms; i++) {
-      layout.push({ type: 'Quarto', area: areaPerRoom });
+      zones.private.push({ type: 'Quarto', area: areaPerRoom });
     }
   }
 
   if (rooms.bathrooms) {
     const areaPerRoom = zoneAllocation.private / rooms.bathrooms;
     for (let i = 0; i < rooms.bathrooms; i++) {
-      layout.push({ type: 'Banheiro', area: areaPerRoom });
+      zones.private.push({ type: 'Banheiro', area: areaPerRoom });
     }
   }
 
+  // Zona Social (sala de estar, sala de jantar e cozinha)
   if (rooms.livingRoom) {
     const areaPerRoom = zoneAllocation.social / rooms.livingRoom;
     for (let i = 0; i < rooms.livingRoom; i++) {
-      layout.push({ type: 'Sala de Estar', area: areaPerRoom });
+      zones.social.push({ type: 'Sala de Estar', area: areaPerRoom });
     }
   }
 
   if (rooms.kitchen) {
     const areaPerRoom = zoneAllocation.social / rooms.kitchen;
     for (let i = 0; i < rooms.kitchen; i++) {
-      layout.push({ type: 'Cozinha', area: areaPerRoom });
+      zones.social.push({ type: 'Cozinha', area: areaPerRoom });
     }
   }
 
-  // Retornar layout, dimensões úteis e recessos
+  // Zona de Serviço (exemplo: lavanderia, despensa)
+  if (rooms.serviceArea) {
+    const areaPerRoom = zoneAllocation.service / rooms.serviceArea;
+    for (let i = 0; i < rooms.serviceArea; i++) {
+      zones.service.push({ type: 'Área de Serviço', area: areaPerRoom });
+    }
+  }
+
+  // Adicionar as zonas ao layout final (mantendo a ordem lógica)
+  layout.push(...zones.private, ...zones.social, ...zones.service);
+
   return {
     layout,
     availableWidth,
@@ -94,6 +112,7 @@ function generateLayoutWithAI(dimensions: { width: number; length: number }, roo
     },
   };
 }
+
 
 
 router.post('/generate-ai', (req, res) => {
