@@ -35,58 +35,65 @@ function generateFloorPlan(
 // Função simulada para a IA gerar um layout
 function generateLayoutWithAI(dimensions: { width: number; length: number }, rooms: { [key: string]: number }) {
   const layout = [];
-  const totalArea = dimensions.width * dimensions.length;
 
-  // Definir áreas específicas para diferentes tipos de cômodos
+  // Definir os recuos obrigatórios
+  const frontalRecess = 3; // Recuo frontal de 3 metros
+  const lateralRecess = 1.5; // Recuo lateral de 1,5 metros
+  const backRecess = 1.5; // Recuo de fundo de 1,5 metros
+
+  // Ajustar as dimensões disponíveis para construção considerando os recuos
+  const availableWidth = dimensions.width - 2 * lateralRecess;
+  const availableLength = dimensions.length - frontalRecess - backRecess;
+
+  // Exemplo simples de distribuição de cômodos (pode ser melhorado conforme necessário)
+  const totalAvailableArea = availableWidth * availableLength;
   const zoneAllocation = {
-    private: 0.4 * totalArea, // Zona privada (quartos e banheiros) ocupa 40% da área
-    social: 0.4 * totalArea,  // Zona social (sala de estar, jantar, cozinha) ocupa 40%
-    service: 0.2 * totalArea, // Zona de serviço ocupa 20%
+    private: 0.4 * totalAvailableArea,
+    social: 0.4 * totalAvailableArea,
+    service: 0.2 * totalAvailableArea,
   };
 
-  // Agrupamento por zona
-  const zones = {
-    private: [],
-    social: [],
-    service: [],
-  };
-
-  // Distribuir cômodos nas zonas
+  // Distribuir cômodos nas zonas (exemplo simples)
   if (rooms.bedrooms) {
     const areaPerRoom = zoneAllocation.private / rooms.bedrooms;
     for (let i = 0; i < rooms.bedrooms; i++) {
-      zones.private.push({ type: 'Quarto', area: areaPerRoom });
+      layout.push({ type: 'Quarto', area: areaPerRoom });
     }
   }
 
   if (rooms.bathrooms) {
     const areaPerRoom = zoneAllocation.private / rooms.bathrooms;
     for (let i = 0; i < rooms.bathrooms; i++) {
-      zones.private.push({ type: 'Banheiro', area: areaPerRoom });
+      layout.push({ type: 'Banheiro', area: areaPerRoom });
     }
   }
 
   if (rooms.livingRoom) {
     const areaPerRoom = zoneAllocation.social / rooms.livingRoom;
     for (let i = 0; i < rooms.livingRoom; i++) {
-      zones.social.push({ type: 'Sala de Estar', area: areaPerRoom });
+      layout.push({ type: 'Sala de Estar', area: areaPerRoom });
     }
   }
 
   if (rooms.kitchen) {
     const areaPerRoom = zoneAllocation.social / rooms.kitchen;
     for (let i = 0; i < rooms.kitchen; i++) {
-      zones.social.push({ type: 'Cozinha', area: areaPerRoom });
+      layout.push({ type: 'Cozinha', area: areaPerRoom });
     }
   }
 
-  // Adicionar as zonas ao layout final
-  layout.push(...zones.private, ...zones.social, ...zones.service);
-
-  return layout;
+  // Retornar layout, dimensões úteis e recessos
+  return {
+    layout,
+    availableWidth,
+    availableLength,
+    recesses: {
+      frontalRecess,
+      lateralRecess,
+      backRecess,
+    },
+  };
 }
-
-
 
 
 router.post('/generate-ai', (req, res) => {
@@ -97,15 +104,19 @@ router.post('/generate-ai', (req, res) => {
     return res.status(400).json({ error: 'Dimensões e cômodos são obrigatórios' });
   }
 
-  // Simulação de uma chamada para a IA para gerar um layout mais detalhado
-  const layout = generateLayoutWithAI(dimensions, rooms);
+  // Gerar o layout, incluindo recessos e dimensões úteis
+  const layoutData = generateLayoutWithAI(dimensions, rooms);
 
-  // Retorna o layout gerado pela IA
+  // Retorna o layout gerado pela IA junto com os recessos e dimensões úteis
   res.status(200).json({
     message: 'Layout gerado pela IA com sucesso',
-    layout,
+    layout: layoutData.layout,
+    availableWidth: layoutData.availableWidth,
+    availableLength: layoutData.availableLength,
+    recesses: layoutData.recesses,
   });
 });
+
 
 router.post('/generate', (req, res) => {
   const { dimensions, rooms } = req.body;

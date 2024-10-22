@@ -11,12 +11,21 @@ interface Dimensions {
   length: number;
 }
 
+interface Recess {
+  frontalRecess: number;
+  lateralRecess: number;
+  backRecess: number;
+}
+
 interface FloorPlanSVGProps {
   layout: Room[];
   dimensions: Dimensions;
+  availableWidth: number;
+  availableLength: number;
+  recesses: Recess;
 }
 
-const FloorPlanSVG: React.FC<FloorPlanSVGProps> = ({ layout, dimensions }) => {
+const FloorPlanSVG: React.FC<FloorPlanSVGProps> = ({ layout, dimensions, availableWidth, availableLength, recesses }) => {
   const scale = 10;
 
   useEffect(() => {
@@ -62,8 +71,13 @@ const FloorPlanSVG: React.FC<FloorPlanSVGProps> = ({ layout, dimensions }) => {
       });
   }, []);
 
-  let currentX = 0;
-  let currentY = 0;
+  // Verificação adicional para garantir que recesses não sejam indefinidos
+  const lateralRecess = recesses?.lateralRecess || 0;
+  const frontalRecess = recesses?.frontalRecess || 0;
+  const backRecess = recesses?.backRecess || 0;
+
+  let currentX = lateralRecess * scale;
+  let currentY = frontalRecess * scale;
 
   return (
     <svg
@@ -71,8 +85,20 @@ const FloorPlanSVG: React.FC<FloorPlanSVGProps> = ({ layout, dimensions }) => {
       height={dimensions.length * scale}
       style={{ border: '1px solid black', marginTop: '20px' }}
     >
+      {/* Desenhar a área útil disponível após os recuos */}
+      <rect
+        x={lateralRecess * scale}
+        y={frontalRecess * scale}
+        width={availableWidth * scale}
+        height={availableLength * scale}
+        fill="none"
+        stroke="red"
+        strokeDasharray="5,5"
+      />
+
+      {/* Renderizar os cômodos dentro da área útil */}
       {layout.map((room, index) => {
-        const roomWidth = Math.sqrt(room.area) * scale; // Baseado na área do cômodo
+        const roomWidth = Math.sqrt(room.area) * scale;
         const roomHeight = Math.sqrt(room.area) * scale;
 
         const rect = (
@@ -91,8 +117,8 @@ const FloorPlanSVG: React.FC<FloorPlanSVGProps> = ({ layout, dimensions }) => {
         );
 
         currentX += roomWidth;
-        if (currentX >= dimensions.width * scale) {
-          currentX = 0;
+        if (currentX >= (lateralRecess + availableWidth) * scale) {
+          currentX = lateralRecess * scale;
           currentY += roomHeight;
         }
 

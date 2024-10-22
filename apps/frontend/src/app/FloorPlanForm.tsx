@@ -4,7 +4,7 @@ import FloorPlanSVG from './FloorPlanSVG'; // Importar o componente SVG
 const FloorPlanForm = () => {
   const [dimensions, setDimensions] = useState({ width: '', length: '' });
   const [rooms, setRooms] = useState({ bedrooms: 0, bathrooms: 0, kitchen: 0, livingRoom: 0 });
-  const [layout, setLayout] = useState<any[]>([]); // Estado para armazenar o layout gerado
+  const [layoutData, setLayoutData] = useState<any>(null); // Armazenar dados do layout, incluindo recessos e dimensões úteis
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -24,9 +24,8 @@ const FloorPlanForm = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+  
     try {
-      // Chamar a rota que simula a geração de layout com IA
       const response = await fetch('http://localhost:3333/api/floorplan/generate-ai', {
         method: 'POST',
         headers: {
@@ -34,19 +33,21 @@ const FloorPlanForm = () => {
         },
         body: JSON.stringify({ dimensions, rooms }),
       });
-
+  
       const data = await response.json();
-      setLayout(data.layout); // Armazena o layout gerado no estado
+      console.log('Dados recebidos do backend:', data); // Verificar se os dados estão corretos
+      setLayoutData(data); // Armazena o layout e as dimensões úteis no estado
     } catch (error) {
       console.error('Erro ao enviar dados:', error);
     }
   };
+  
 
   return (
     <div>
       <form onSubmit={handleSubmit}>
         <h2>Planta Baixa - Detalhes do Terreno</h2>
-
+  
         <label htmlFor="width">Largura do Terreno (em metros):</label>
         <input
           type="number"
@@ -56,7 +57,7 @@ const FloorPlanForm = () => {
           onChange={handleInputChange}
           required
         />
-
+  
         <label htmlFor="length">Comprimento do Terreno (em metros):</label>
         <input
           type="number"
@@ -66,9 +67,9 @@ const FloorPlanForm = () => {
           onChange={handleInputChange}
           required
         />
-
+  
         <h2>Quantidade de Cômodos</h2>
-
+  
         <label htmlFor="bedrooms">Quartos:</label>
         <input
           type="number"
@@ -79,7 +80,7 @@ const FloorPlanForm = () => {
           min="0"
           required
         />
-
+  
         <label htmlFor="bathrooms">Banheiros:</label>
         <input
           type="number"
@@ -90,7 +91,7 @@ const FloorPlanForm = () => {
           min="0"
           required
         />
-
+  
         <label htmlFor="kitchen">Cozinhas:</label>
         <input
           type="number"
@@ -101,7 +102,7 @@ const FloorPlanForm = () => {
           min="0"
           required
         />
-
+  
         <label htmlFor="livingRoom">Salas de Estar:</label>
         <input
           type="number"
@@ -112,22 +113,32 @@ const FloorPlanForm = () => {
           min="0"
           required
         />
-
+  
         <button type="submit">Gerar Planta Baixa com IA</button>
       </form>
-
-      {/* Renderizar o layout gráfico com SVG */}
-      {layout.length > 0 && (
-        <FloorPlanSVG
-          layout={layout}
-          dimensions={{
-            width: Number(dimensions.width), // Conversão de string para number
-            length: Number(dimensions.length), // Conversão de string para number
-          }}
-        />
+  
+      {/* Verificação de segurança antes de renderizar o layout */}
+      {layoutData ? (
+        layoutData.recesses ? (
+          <FloorPlanSVG
+            layout={layoutData.layout}
+            dimensions={{
+              width: Number(dimensions.width),
+              length: Number(dimensions.length),
+            }}
+            availableWidth={layoutData.availableWidth}
+            availableLength={layoutData.availableLength}
+            recesses={layoutData.recesses}
+          />
+        ) : (
+          <p>Erro: Recessos não definidos.</p>
+        )
+      ) : (
+        <p>Aguardando dados do layout...</p>
       )}
     </div>
   );
+  
 };
 
 export default FloorPlanForm;
