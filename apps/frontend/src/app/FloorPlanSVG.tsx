@@ -25,13 +25,7 @@ interface FloorPlanSVGProps {
   recesses: Recess;
 }
 
-const FloorPlanSVG: React.FC<FloorPlanSVGProps> = ({
-  layout,
-  dimensions,
-  availableWidth,
-  availableLength,
-  recesses,
-}) => {
+const FloorPlanSVG: React.FC<FloorPlanSVGProps> = ({ layout, dimensions, availableWidth, availableLength, recesses }) => {
   const scale = 10;
 
   useEffect(() => {
@@ -40,10 +34,8 @@ const FloorPlanSVG: React.FC<FloorPlanSVGProps> = ({
         listeners: {
           move(event) {
             const target = event.target;
-            const x =
-              (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-            const y =
-              (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+            const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+            const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
 
             target.style.transform = `translate(${x}px, ${y}px)`;
             target.setAttribute('data-x', x.toString());
@@ -56,8 +48,8 @@ const FloorPlanSVG: React.FC<FloorPlanSVGProps> = ({
         listeners: {
           move(event) {
             const target = event.target;
-            let x = parseFloat(target.getAttribute('data-x')) || 0;
-            let y = parseFloat(target.getAttribute('data-y')) || 0;
+            let x = (parseFloat(target.getAttribute('data-x')) || 0);
+            let y = (parseFloat(target.getAttribute('data-y')) || 0);
 
             target.style.width = `${event.rect.width}px`;
             target.style.height = `${event.rect.height}px`;
@@ -99,8 +91,8 @@ const FloorPlanSVG: React.FC<FloorPlanSVGProps> = ({
         strokeDasharray="5,5"
       />
 
-      {/* Renderizar a área de luz */}
-      {layout.map((room, index) => {
+            {/* Renderizar a área de luz */}
+            {layout.map((room, index) => {
         if (room.type === 'Área de Luz') {
           return (
             <rect
@@ -125,9 +117,7 @@ const FloorPlanSVG: React.FC<FloorPlanSVGProps> = ({
         if (room.type === 'Área de Lazer') {
           // Posicionar a área de lazer no fundo do terreno
           const leisureX = recesses.lateralRecess * scale;
-          const leisureY =
-            (recesses.frontalRecess + availableLength - Math.sqrt(room.area)) *
-            scale;
+          const leisureY = (recesses.frontalRecess + availableLength - Math.sqrt(room.area)) * scale;
 
           return (
             <rect

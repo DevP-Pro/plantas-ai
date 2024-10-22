@@ -4,6 +4,7 @@ import FloorPlanSVG from './FloorPlanSVG'; // Importar o componente SVG
 const FloorPlanForm = () => {
   const [dimensions, setDimensions] = useState({ width: '', length: '' });
   const [rooms, setRooms] = useState({ bedrooms: 0, bathrooms: 0, kitchen: 0, livingRoom: 0 });
+  const [useOptimization, setUseOptimization] = useState(false); // Estado para a escolha da função otimizada
   const [layoutData, setLayoutData] = useState<any>(null); // Armazenar dados do layout, incluindo recessos e dimensões úteis
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -22,6 +23,10 @@ const FloorPlanForm = () => {
     });
   };
 
+  const handleOptimizationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUseOptimization(e.target.checked); // Atualiza o estado quando o usuário muda o checkbox
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
   
@@ -31,7 +36,7 @@ const FloorPlanForm = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ dimensions, rooms }),
+        body: JSON.stringify({ dimensions, rooms, optimization: useOptimization }), // Inclui a flag de otimização
       });
   
       const data = await response.json();
@@ -41,7 +46,6 @@ const FloorPlanForm = () => {
       console.error('Erro ao enviar dados:', error);
     }
   };
-  
 
   return (
     <div>
@@ -113,6 +117,18 @@ const FloorPlanForm = () => {
           min="0"
           required
         />
+
+        {/* Checkbox para escolha da otimização */}
+        <div>
+          <label htmlFor="optimization">Usar otimização avançada?</label>
+          <input
+            type="checkbox"
+            id="optimization"
+            name="optimization"
+            checked={useOptimization}
+            onChange={handleOptimizationChange}
+          />
+        </div>
   
         <button type="submit">Gerar Planta Baixa com IA</button>
       </form>
@@ -138,7 +154,6 @@ const FloorPlanForm = () => {
       )}
     </div>
   );
-  
 };
 
 export default FloorPlanForm;

@@ -1,1 +1,13 @@
 /* Your styles goes here. */
+.svg-container {
+    overflow: hidden;
+    width: 100%;
+    height: 600px;
+    position: relative;
+  }
+  
+  .svg-content {
+    transform-origin: 0 0; /* Permite o zoom a partir da origem */
+    transition: transform 0.2s ease-in-out; /* Suaviza o zoom */
+  }
+  
