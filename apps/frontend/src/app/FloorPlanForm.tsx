@@ -26,7 +26,8 @@ const FloorPlanForm = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch('http://localhost:3333/api/floorplan/generate', {
+      // Chamar a rota que simula a geração de layout com IA
+      const response = await fetch('http://localhost:3333/api/floorplan/generate-ai', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +113,7 @@ const FloorPlanForm = () => {
           required
         />
 
-        <button type="submit">Gerar Planta Baixa</button>
+        <button type="submit">Gerar Planta Baixa com IA</button>
       </form>
 
       {/* Renderizar o layout gráfico com SVG */}
