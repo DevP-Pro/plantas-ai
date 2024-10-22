@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import FloorPlanSVG from './FloorPlanSVG'; // Importar o componente SVG
 
 const FloorPlanForm = () => {
   const [dimensions, setDimensions] = useState({ width: '', length: '' });
@@ -34,7 +35,6 @@ const FloorPlanForm = () => {
       });
 
       const data = await response.json();
-      console.log('Resposta do backend:', data);
       setLayout(data.layout); // Armazena o layout gerado no estado
     } catch (error) {
       console.error('Erro ao enviar dados:', error);
@@ -115,18 +115,15 @@ const FloorPlanForm = () => {
         <button type="submit">Gerar Planta Baixa</button>
       </form>
 
-      {/* Renderizar o layout gerado */}
+      {/* Renderizar o layout gráfico com SVG */}
       {layout.length > 0 && (
-        <div>
-          <h2>Planta Baixa Gerada</h2>
-          <ul>
-            {layout.map((room, index) => (
-              <li key={index}>
-                {room.type}: {room.area.toFixed(2)} m²
-              </li>
-            ))}
-          </ul>
-        </div>
+        <FloorPlanSVG
+          layout={layout}
+          dimensions={{
+            width: Number(dimensions.width), // Conversão de string para number
+            length: Number(dimensions.length), // Conversão de string para number
+          }}
+        />
       )}
     </div>
   );
